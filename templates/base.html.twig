@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Welcome!{% endblock %}</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css">
+        <link rel="stylesheet" href="{{ asset('css/styles.css') }}" type="text/css">
+        <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.min.js"></script>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {% block stylesheets %}{% endblock %}
+    </head>
+    <body>
+    <div class="container-fluid">
+        <div class="bg">
+            {% block body %}{% endblock %}
+        </div>
+    </div>
+    <script>
+        // Improved Javascript courtesy of Gemma Anible
+        const nasa_api_key = 'zpj8nG5YUcakf6K1RihjAd75zX8QJmgceeqx2B4f';   // Replace with personal NASA API key
+        const cpoints = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+        if (nasa_api_key==='DEMO_KEY') {
+            $('#nasa_api_key').html('Replace the NASA API DEMO_KEY with your own NASA API key obtained from <a href="https://api.nasa.gov/index.html#apply-for-an-api-key">here</a>.<hr>')
+        }
+        var one_sol = false;
+        //////////////////////////////////////////////////////////////////////
+        // Retrieve Mars weather data from NASA API as JSON stream
+        // - Write data for each Sol
+        // - Write JSON stream
+        //////////////////////////////////////////////////////////////////////
+        $.get(
+            `https://api.nasa.gov/insight_weather/?feedtype=json&ver=1.0&api_key=${nasa_api_key}`,
+            data => {
+                data.sol_keys.forEach(sol => write_sol_data(sol, data[sol]));
+                $("#summary").append('<hr>');
+            }
+        ).always(
+            function(data) {
+                // Write JSON stream to #json PRE
+                $("#json").text(JSON.stringify(data, null, 2));
+                if (one_sol) {
+
+                    plot_sol_data({{ table[id].id }}, data[{{ table[id].id }}]);
+                }
+            }
+        );
+        //////////////////////////////////////////////////////////////////////
+        // Function to write data for one Sol
+        //////////////////////////////////////////////////////////////////////
+        function write_sol_data(sol, sol_obj) {
+            // Summarize per-Sol temperature data to #summary DIV
+            $('#summary').append( `On Sol <b>${sol}</b> the temperatures ranged from <b>${Math.round(sol_obj.AT.mn)}&deg;C</b> to <b>${Math.round(sol_obj.AT.mx)}&deg;C</b> with an atmospheric pressure of <b>${Math.round(sol_obj.PRE.mn)} Pa</b> to <b>${Math.round(sol_obj.PRE.mx)} Pa</b>.<br>`);
+            one_sol = sol;
+            // Add per-Sol button to #buttons DIV
+/*            $('#buttons').append(
+                $('<button>')
+                    .attr('id', sol)
+                    .on('click', e => plot_sol_data(sol, sol_obj))
+                    .text(sol)
+            );*/
+        }
+        //////////////////////////////////////////////////////////////////////
+        // Plot Wind Direction (WD) data for one Sol to #wd_plot DIV
+        //////////////////////////////////////////////////////////////////////
+        function plot_sol_data(Sol, sol_obj) {
+            var wd_obj = sol_obj.WD;   // Wind direction object for Sol
+            // fill compass points with sol data
+            var vals = (new Array(16)).fill(0).map((empty, idx) => wd_obj[idx] ? wd_obj[idx].ct : 0);
+            var wd_data = [{               // Load WD data as one-element array
+                r: vals,
+                t: cpoints,
+                name: `Pomiar ${Sol}`,
+                marker: {color: '#DDD'},
+                type: 'area'
+            }];
+            var wd_layout = {              // Load WD plot layout
+                font: {
+                    family: "Merriweather, serif",
+                    size: 18,
+                    color: '#222'
+                },
+                autosize: false,
+                width: 400,
+                height: 400,
+                title: `Kierunek wiatru`,
+                legend: {font: {size: 16}},
+                radialaxis: {ticksuffix: ''},
+                orientation: 270,
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                outlineColor: 'transparent',
+                text_decoration: 'none'
+            };
+            Plotly.newPlot('wd_plot', wd_data, wd_layout);     // Plot wind rose
+            // Add most common wind direction
+            $('#wd_most_common').html(`Most common wind direction is ${wd_obj.most_common ? wd_obj.most_common.compass_point : 'undefined'}<hr>`)
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+        {% block javascripts %}{% endblock %}
+    </body>
+</html>
