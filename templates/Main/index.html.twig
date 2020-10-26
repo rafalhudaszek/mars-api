@@ -3,6 +3,7 @@
 {% block title %}Index{% endblock %}
 
 {% block body %}
+
     <div class="row m-0">
         <div class=" offset-3 col-9           offset-xl-7 col-xl-5 p-3 text-right">
             <div class="display-3">Pogoda na Marsie</div>
@@ -22,7 +23,7 @@
         <div class=" col-xl-3  ml-5">
             <div class="h4 pl-3" style="opacity:0.8">Dostępne pomiary:</div>
             {% for mes in table %}
-                <a href="{{ path("main", {id: mes.id}) }}">
+                <a href="{{ path("pomiar", {id: mes.id}) }}">
                     <div class="mes">
                         <h4>Pomiar {{ mes.id }}</h4>
                         <h5>Data: {{ mes.date }}</h5>
@@ -30,30 +31,6 @@
                 </a>
             {% endfor %}
         </div>
-
-        {% if renderFlag %}
-            <div class="offset-xl-1 col-xl-2    offset-lg-1 col-lg-3" style="padding-top: 27vh;">
-                <div class="chart" style="background-color: transparent;">
-                        <h1>Pomiar:{{ table[id].id }}</h1>
-                </div>
-                <div class="chart " style="margin-top: 7vh;" >
-                    <h5>Data: {{ table[id].date }}</h5>
-                    <h5>Ciśnienie: {{ table[id].pavg }}Pa</h5>
-                    <h5>Wiatr: {{ table[id].wind }}m/s</h5>
-                </div>
-            </div>
-            <div class=" col-xl-2 " style="padding-top: 39vh;">
-                <div class="chart" >
-                    <h5>Temperatura</h5>
-                    <h5>Max: {{ table[id].tmax }}°C</h5>
-                    <h5>Avg: {{ table[id].tavg }}°C</h5>
-                    <h5>Min: {{ table[id].tmin }}°C</h5>
-                </div>
-            </div>
-            <div class="col-xl-2 pt-5">
-                <div id="wd_plot" style="width: 300px; height: 300px; padding-top: 20vh;"><!-- Plotly chart will be drawn inside this DIV --></div>
-            </div>
-        {% endif %}
 
     </div>
 

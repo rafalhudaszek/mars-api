@@ -1,0 +1,144 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Index{% endblock %}
+
+{% block body %}
+
+    <div class="row m-0">
+        <div class=" offset-3 col-9           offset-xl-7 col-xl-5 p-3 text-right">
+            <div class="display-3">Pogoda na Marsie</div>
+        </div>
+    </div>
+
+    <div class="row m-0">
+        <div class="offset-2 col-10            offset-xl-7 col-xl-5 p-3 text-right">
+            <div class="h3" style="opacity: 0.8">
+                Sonda InSight codziennie zbiera dane meteorologiczne
+                na równinie wulkanicznej Elysium Planitia.
+            </div>
+        </div>
+    </div>
+
+    <div class="row m-0">
+        <div class=" col-xl-3  ml-5">
+            <div class="h4 pl-3" style="opacity:0.8">Dostępne pomiary:</div>
+            {% for mes in table %}
+                <a href="{{ path("pomiar", {id: mes.id}) }}">
+                    <div class="mes">
+                        <h4>Pomiar {{ mes.id }}</h4>
+                        <h5>Data: {{ mes.date }}</h5>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+
+        {% if renderFlag %}
+            <div class="offset-xl-1 col-xl-2    offset-lg-1 col-lg-3" style="padding-top: 27vh;">
+                <div class="chart" style="background-color: transparent;">
+                    <h1>Pomiar:{{ table[id].id }}</h1>
+                </div>
+                <div class="chart " style="margin-top: 7vh;" >
+                    <h5>Data: {{ table[id].date }}</h5>
+                    <h5>Ciśnienie: {{ table[id].pavg }}Pa</h5>
+                    <h5>Wiatr: {{ table[id].wind }}m/s</h5>
+                </div>
+            </div>
+            <div class=" col-xl-2 " style="padding-top: 39vh;">
+                <div class="chart" >
+                    <h5>Temperatura</h5>
+                    <h5>Max: {{ table[id].tmax }}°C</h5>
+                    <h5>Avg: {{ table[id].tavg }}°C</h5>
+                    <h5>Min: {{ table[id].tmin }}°C</h5>
+                </div>
+            </div>
+            <div class="col-xl-2 pt-5">
+                <div id="wd_plot" style="width: 300px; height: 300px; padding-top: 20vh;"><!-- Plotly chart will be drawn inside this DIV --></div>
+            </div>
+        {% endif %}
+
+    </div>
+
+    <script>
+        // Improved Javascript courtesy of Gemma Anible
+        const nasa_api_key = 'zpj8nG5YUcakf6K1RihjAd75zX8QJmgceeqx2B4f';   // Replace with personal NASA API key
+        const cpoints = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+        if (nasa_api_key==='DEMO_KEY') {
+            $('#nasa_api_key').html('Replace the NASA API DEMO_KEY with your own NASA API key obtained from <a href="https://api.nasa.gov/index.html#apply-for-an-api-key">here</a>.<hr>')
+        }
+        var one_sol = false;
+        //////////////////////////////////////////////////////////////////////
+        // Retrieve Mars weather data from NASA API as JSON stream
+        // - Write data for each Sol
+        // - Write JSON stream
+        //////////////////////////////////////////////////////////////////////
+        $.get(
+            `https://api.nasa.gov/insight_weather/?feedtype=json&ver=1.0&api_key=${nasa_api_key}`,
+            data => {
+                data.sol_keys.forEach(sol => write_sol_data(sol, data[sol]));
+                $("#summary").append('<hr>');
+            }
+        ).always(
+            function(data) {
+                // Write JSON stream to #json PRE
+                $("#json").text(JSON.stringify(data, null, 2));
+                if (one_sol) {
+
+                    plot_sol_data({{ table[id].id }}, data[{{ table[id].id }}]);
+                }
+            }
+        );
+        //////////////////////////////////////////////////////////////////////
+        // Function to write data for one Sol
+        //////////////////////////////////////////////////////////////////////
+        function write_sol_data(sol, sol_obj) {
+            // Summarize per-Sol temperature data to #summary DIV
+            $('#summary').append( `On Sol <b>${sol}</b> the temperatures ranged from <b>${Math.round(sol_obj.AT.mn)}&deg;C</b> to <b>${Math.round(sol_obj.AT.mx)}&deg;C</b> with an atmospheric pressure of <b>${Math.round(sol_obj.PRE.mn)} Pa</b> to <b>${Math.round(sol_obj.PRE.mx)} Pa</b>.<br>`);
+            one_sol = sol;
+            // Add per-Sol button to #buttons DIV
+            /*            $('#buttons').append(
+                            $('<button>')
+                                .attr('id', sol)
+                                .on('click', e => plot_sol_data(sol, sol_obj))
+                                .text(sol)
+                        );*/
+        }
+        //////////////////////////////////////////////////////////////////////
+        // Plot Wind Direction (WD) data for one Sol to #wd_plot DIV
+        //////////////////////////////////////////////////////////////////////
+        function plot_sol_data(Sol, sol_obj) {
+            var wd_obj = sol_obj.WD;   // Wind direction object for Sol
+            // fill compass points with sol data
+            var vals = (new Array(16)).fill(0).map((empty, idx) => wd_obj[idx] ? wd_obj[idx].ct : 0);
+            var wd_data = [{               // Load WD data as one-element array
+                r: vals,
+                t: cpoints,
+                name: `Pomiar ${Sol}`,
+                marker: {color: '#DDD'},
+                type: 'area'
+            }];
+            var wd_layout = {              // Load WD plot layout
+                font: {
+                    family: "Merriweather, serif",
+                    size: 18,
+                    color: '#222',
+                    text_shadow: "none"
+                },
+                autosize: false,
+                width: 400,
+                height: 400,
+                title: `Kierunek wiatru`,
+                legend: {font: {size: 16}},
+                radialaxis: {ticksuffix: ''},
+                orientation: 270,
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                outlineColor: 'transparent',
+                text_decoration: 'none'
+
+            };
+            Plotly.newPlot('wd_plot', wd_data, wd_layout);     // Plot wind rose
+            // Add most common wind direction
+            $('#wd_most_common').html(`Most common wind direction is ${wd_obj.most_common ? wd_obj.most_common.compass_point : 'undefined'}<hr>`)
+        }
+    </script>
+{% endblock %}
