@@ -1,4 +1,4 @@
-body, html {
+body{
     height: 100%;
     margin: 0 !important;
     color: #DDD;
@@ -7,6 +7,7 @@ body, html {
     background-color: #111;
     font-size: 16px;
 }
+
 .bg {
 
     background-image: url("../image/inSight.jpg");
@@ -58,7 +59,6 @@ body, html {
     padding-top: 20vh;
 }
 
-
 a
 {
     color: #DDD;
@@ -72,22 +72,45 @@ a:hover
 
 @media(max-width: 576px)
 {
-
+    html {font-size: 10px;}
+    #title{}
+    #description{margin-top: 20vh;}
+    #measurements{}
+    #data1{margin-top: 5vh;}
+    #data2{margin-top: 2vh;}
+    #data3{margin-left: 10vh;}
 }
 
-@media(max-width: 1200px)
+@media(max-width: 767px)
 {
-    body
-    {
-        font-size: 14px;
-    }
-    /*.display-3{font-size: 4rem;}
-    h1{font-size: 2rem;}
-    h3{font-size: 1.25rem;}
-    h4{font-size: 1.25rem;}
-    h5{font-size: 1rem;}*/
+    html {font-size: 12px;}
+    #title{}
+    #description{margin-top: 22vh;}
+    #measurements{}
+    #data1{margin-top: 5vh;}
+    #data2{margin-top: 2vh;}
+    #data3{margin-left: 11vh;}
+}
 
-    .wd-plot {padding-top: 5vh;}
 
-    .offset-lg-4{margin-left: 0;}
+@media(max-width: 992px)
+{
+    html {font-size: 14px;}
+    #title{}
+    #description{margin-top: 24vh;}
+    #measurements{}
+    #data1{margin-top: 5vh;}
+    #data2{margin-top: 2vh;}
+    #data3{margin-left: 11vh;}
+}
+
+
+@media(min-width: 992px)
+{
+    html {font-size: 16px;}
+    #measurements{margin-left: 5vh;}
+    #data1{margin-top: 27vh;}
+    #data2{margin-top: 37vh;}
+    #data3{margin-top: 20vh;}
+    #data4{margin-top: 4vh}
 }

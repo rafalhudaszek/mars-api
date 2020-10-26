@@ -4,46 +4,19 @@
 
 {% block body %}
 
-    <div class="row m-0">
-        <div class=" offset-3 col-9           offset-xl-7 col-xl-5 p-3 text-right">
-            <div class="display-3">Pogoda na Marsie</div>
-        </div>
-    </div>
-
-    <div class="row m-0">
-        <div class="offset-2 col-10            offset-xl-7 col-xl-5 p-3 text-right">
-            <div class="h3" style="opacity: 0.8">
-                Sonda InSight codziennie zbiera dane meteorologiczne
-                na równinie wulkanicznej Elysium Planitia.
-            </div>
-        </div>
-    </div>
-
-    <div class="row m-0">
-        <div class=" col-xl-3  ml-5">
-            <div class="h4 pl-3" style="opacity:0.8">Dostępne pomiary:</div>
-            {% for mes in table %}
-                <a href="{{ path("pomiar", {id: mes.id}) }}">
-                    <div class="mes">
-                        <h4>Pomiar {{ mes.id }}</h4>
-                        <h5>Data: {{ mes.date }}</h5>
-                    </div>
-                </a>
-            {% endfor %}
-        </div>
 
         {% if renderFlag %}
-            <div class="offset-xl-1 col-xl-2    offset-lg-1 col-lg-3" style="padding-top: 27vh;">
+            <div class="offset-lg-1 col-lg-2" id="data1">
                 <div class="chart" style="background-color: transparent;">
                     <h1>Pomiar:{{ table[id].id }}</h1>
                 </div>
-                <div class="chart " style="margin-top: 7vh;" >
+                <div class="chart " id="data4">
                     <h5>Data: {{ table[id].date }}</h5>
                     <h5>Ciśnienie: {{ table[id].pavg }}Pa</h5>
                     <h5>Wiatr: {{ table[id].wind }}m/s</h5>
                 </div>
             </div>
-            <div class=" col-xl-2 " style="padding-top: 39vh;">
+            <div class=" col-lg-2 " id="data2">
                 <div class="chart" >
                     <h5>Temperatura</h5>
                     <h5>Max: {{ table[id].tmax }}°C</h5>
@@ -51,15 +24,24 @@
                     <h5>Min: {{ table[id].tmin }}°C</h5>
                 </div>
             </div>
-            <div class="col-xl-2 pt-5">
-                <div id="wd_plot" style="width: 300px; height: 300px; padding-top: 20vh;"><!-- Plotly chart will be drawn inside this DIV --></div>
+            <div class="col-lg-2" id="data3">
+                <div id="wd_plot" ><!-- Plotly chart will be drawn inside this DIV --></div>
             </div>
         {% endif %}
 
-    </div>
 
     <script>
-        // Improved Javascript courtesy of Gemma Anible
+        var windowWidth = window.innerWidth;
+        var compasWidth = 0;
+        if(windowWidth < 992)
+        {
+            compasWidth = windowWidth - windowWidth/5;
+        }
+        else
+        {
+            compasWidth = 400;
+        }
+
         const nasa_api_key = 'zpj8nG5YUcakf6K1RihjAd75zX8QJmgceeqx2B4f';   // Replace with personal NASA API key
         const cpoints = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
         if (nasa_api_key==='DEMO_KEY') {
@@ -112,7 +94,7 @@
             var wd_data = [{               // Load WD data as one-element array
                 r: vals,
                 t: cpoints,
-                name: `Pomiar ${Sol}`,
+                name: `${Sol}`,
                 marker: {color: '#DDD'},
                 type: 'area'
             }];
@@ -124,8 +106,8 @@
                     text_shadow: "none"
                 },
                 autosize: false,
-                width: 400,
-                height: 400,
+                width: compasWidth,
+                height: compasWidth,
                 title: `Kierunek wiatru`,
                 legend: {font: {size: 16}},
                 radialaxis: {ticksuffix: ''},

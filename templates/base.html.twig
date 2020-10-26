@@ -15,7 +15,35 @@
     <body>
     <div class="container-fluid">
         <div class="bg">
+            <div class="row m-0">
+                <div class=" offset-3 col-9        offset-lg-7 col-lg-5 p-3 text-right" id="title">
+                    <div class="display-3">Pogoda na Marsie</div>
+                </div>
+            </div>
+
+            <div class="row m-0">
+                <div class="offset-2 col-10            offset-lg-7 col-lg-5 p-3 text-right" id="description">
+                    <div class="h3" style="opacity: 0.8">
+                        Sonda InSight codziennie zbiera dane meteorologiczne
+                        na równinie wulkanicznej Elysium Planitia.
+                    </div>
+                </div>
+            </div>
+
+            <div class="row m-0">
+                <div class="offset-2 col-8   offset-lg-0    col-lg-3 " id="measurements">
+                    <div class="h4 pl-3" style="opacity:0.8">Dostępne pomiary:</div>
+                    {% for mes in table %}
+                        <a href="{{ path("pomiar", {id: mes.id}) }}">
+                            <div class="mes">
+                                <h4>Pomiar {{ mes.id }}</h4>
+                                <h5>Data: {{ mes.date }}</h5>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
             {% block body %}{% endblock %}
+            </div>
         </div>
     </div>
 
