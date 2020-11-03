@@ -42,32 +42,50 @@ class MainController extends AbstractController
                 array_push($measurementTable, $measurement);
 
                 $measurement->setId(intval($table['sol_keys'][$i]));
+                if(self::isValid($table, intval($table['sol_keys'][$i])))
+                {
+                    $measurement->setDate(preg_replace("/[^0-9-:]/", " ", $table[$measurement->getId()]['First_UTC']));
 
-                $measurement->setDate(preg_replace("/[^0-9-:]/", " ",$table[$measurement->getId()]['First_UTC']));
+                    $measurement->setTmax($table[$measurement->getId()]['AT']['mx']);
+                    $measurement->setTavg($table[$measurement->getId()]['AT']['av']);
+                    $measurement->setTmin($table[$measurement->getId()]['AT']['mn']);
 
-                $measurement->setTmax($table[$measurement->getId()]['AT']['mx']);
-                $measurement->setTavg($table[$measurement->getId()]['AT']['av']);
-                $measurement->setTmin($table[$measurement->getId()]['AT']['mn']);
+                    $measurement->setPavg($table[$measurement->getId()]['PRE']['av']);
 
-                $measurement->setPavg($table[$measurement->getId()]['PRE']['av']);
-
-                $measurement->setWind($table[$measurement->getId()]['HWS']['av']);
+                    $measurement->setWind($table[$measurement->getId()]['HWS']['av']);
+                }
+                else
+                {
+                    $measurement->setDate('Pomiar jest nie ważny');
+                }
             }
 
             $session->set('table', $measurementTable);
 
             $id = $request->get('id') - $measurementTable[0]->getId();
-            $renderFlag = true;
-            if($id > count($table['sol_keys']) || $id < 0)
-            {
-                $id = 5;
-                $renderFlag = false;
-            }
             return $this->render('Main/index.html.twig',[
                 'table' => $measurementTable,
 
             ]);
         }
+    }
+
+    public function isValid(array $table, int $measurementId)
+    {
+        $valid = true;
+        if(! $table['validity_checks'][$measurementId]['AT']['valid'])
+        {
+            $valid = false;
+        }
+        elseif(! $table['validity_checks'][$measurementId]['HWS']['valid'])
+        {
+            $valid = false;
+        }
+        elseif(! $table['validity_checks'][$measurementId]['PRE']['valid'])
+        {
+            $valid = false;
+        }
+        return $valid;
     }
 
     /**
@@ -79,13 +97,17 @@ class MainController extends AbstractController
     {
         $session = $this->get('session');
         $measurementTable = $session->get('table');
-        $id = $request->get('id') - $measurementTable[0]->getId();
+        $id = $request->get('id');
         $renderFlag = true;
-        if($id > count($measurementTable) || $id < 0)
+
+        for($i = 0; $i < count($measurementTable); $i++)
         {
-            $id = 5;
-            $renderFlag = false;
+            if($measurementTable[$i]->getId() == $id)
+            {
+                $id = $i;
+            }
         }
+
         return $this->render('Main/display.html.twig',[
             'table' => $measurementTable,
             'id' => $id,

@@ -34,12 +34,19 @@
                 <div class="offset-2 col-8   offset-lg-0    col-lg-3 " id="measurements">
                     <div class="h4 pl-3" style="opacity:0.8">Dostępne pomiary:</div>
                     {% for mes in table %}
-                        <a href="{{ path("pomiar", {id: mes.id}) }}">
-                            <div class="mes">
+                        {% if mes.date == 'Pomiar jest nie ważny' %}
+                            <div class="mesNoHover">
                                 <h4>Pomiar {{ mes.id }}</h4>
-                                <h5>Data: {{ mes.date }}</h5>
+                                <h5>{{ mes.date }}</h5>
                             </div>
-                        </a>
+                        {% else %}
+                            <a href="{{ path("pomiar", {id: mes.id}) }}">
+                                <div class="mes">
+                                    <h4>Pomiar {{ mes.id }}</h4>
+                                    <h5>Data: {{ mes.date }}</h5>
+                                </div>
+                            </a>
+                        {% endif %}
                     {% endfor %}
                 </div>
             {% block body %}{% endblock %}

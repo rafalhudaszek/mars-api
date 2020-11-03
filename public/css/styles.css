@@ -39,6 +39,15 @@ body{
     margin: 10px;
 }
 
+.mesNoHover
+{
+    border: 1px solid #DDD;
+    opacity: 0.8;
+    border-radius: 20px;
+    text-align: center;
+    margin: 10px;
+}
+
 .mes:hover {
     opacity: 1;
 }
